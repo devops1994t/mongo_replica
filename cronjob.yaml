@@ -1,0 +1,57 @@
+apiVersion: v1
+items:
+- apiVersion: batch/v1
+  kind: CronJob
+  metadata:
+    creationTimestamp: "2022-08-22T15:20:45Z"
+    generation: 1
+    name: mongo
+    namespace: default
+    resourceVersion: "547458"
+    uid: e96f5dfb-e431-4989-a26b-3840989348c2
+  spec:
+    concurrencyPolicy: Allow
+    failedJobsHistoryLimit: 1
+    jobTemplate:
+      metadata:
+        creationTimestamp: null
+        name: mongo
+      spec:
+        template:
+          metadata:
+            creationTimestamp: null
+          spec:
+            containers:
+            - command:
+              - mongodump
+              - --uri=mongodb://mongod-0.mongodb-service.default.svc.cluster.local:27017,mongod-1.mongodb-service.default.svc.cluster.local:27017,mongod-2.mongodb-service.default.svc.cluster.local:27017/?replicaSet=rs0
+              - --username=demoadmin
+              - --password=demopwd123
+              - --out=/backup
+              image: mongo
+              imagePullPolicy: Always
+              name: mongo
+              resources: {}
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+              volumeMounts:
+              - mountPath: "/backup"
+                name: backup-volume
+            dnsPolicy: ClusterFirst
+            restartPolicy: OnFailure
+            schedulerName: default-scheduler
+            securityContext: {}
+            terminationGracePeriodSeconds: 30
+            volumes:
+              - name: backup-volume
+                persistentVolumeClaim:
+                  claimName: mongo-backup
+    schedule: '*/2 * * * *'
+    successfulJobsHistoryLimit: 3
+    suspend: false
+  status:
+    lastScheduleTime: "2022-08-22T15:22:00Z"
+    lastSuccessfulTime: "2022-08-22T15:22:04Z"
+kind: List
+metadata:
+  resourceVersion: ""
